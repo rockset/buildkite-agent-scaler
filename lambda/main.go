@@ -78,6 +78,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 
 		publishCloudWatchMetrics        bool
 		disableScaleOut, disableScaleIn bool
+		onlyonerun                      bool
 	)
 
 	if v := os.Getenv("LAMBDA_INTERVAL"); v != "" {
@@ -167,6 +168,11 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	if m := os.Getenv("DISABLE_SCALE_OUT"); m == "true" || m == "1" {
 		log.Printf("Disabling scale-out 🙅🏼‍♂️")
 		disableScaleOut = true
+	}
+
+	if m := os.Getenv("ONE_SHOT"); m == "true" || m == "1" {
+		log.Printf("Will do oneshot run only")
+		onlyonerun = true
 	}
 
 	// establish an AWS session to be re-used
@@ -279,6 +285,10 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 			lastScaleIn = scaler.LastScaleIn()
 			lastScaleOut = scaler.LastScaleOut()
 
+			if onlyonerun {
+				log.Printf("Running once, exiting\n")
+				return "", nil
+			}
 			log.Printf("Waiting for %v\n", interval)
 			time.Sleep(interval)
 		}
