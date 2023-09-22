@@ -3,7 +3,7 @@
 all: build
 
 clean:
-	-rm handler.zip
+	-rm bootstrap.zip
 
 # -----------------------------------------
 # Lambda management
@@ -23,21 +23,22 @@ ifndef BUILDKITE_BUILD_NUMBER
 	USER := "$(shell id -u):$(shell id -g)"
 endif
 
-build: handler.zip
+build: bootstrap.zip
 
-handler.zip: lambda/handler
+bootstrap.zip: lambda/bootstrap
+	cd $(dirname "$<")
 	zip -9 -v -j $@ "$<"
 
-lambda/handler: lambda/main.go
+lambda/bootstrap: lambda/main.go
 	docker run \
 		--env GOCACHE=/go/cache \
 		--user $(USER) \
 		--volume $(PWD):/app \
 		--workdir /app \
 		--rm golang:1.19 \
-		go build -ldflags="$(LD_FLAGS)" -buildvcs="$(BUILDVSC_FLAG)" -o lambda/handler ./lambda
+		go build -ldflags="$(LD_FLAGS)" -buildvcs="$(BUILDVSC_FLAG)" -o lambda/bootstrap ./lambda
 
-lambda-sync: handler.zip
+lambda-sync: bootstrap.zip
 	aws s3 sync \
 		--acl public-read \
 		--exclude '*' --include '*.zip' \
@@ -46,4 +47,4 @@ lambda-sync: handler.zip
 lambda-versions:
 	aws s3api head-object \
 		--bucket ${LAMBDA_S3_BUCKET} \
-		--key handler.zip --query "VersionId" --output text
+		--key bootstrap.zip --query "VersionId" --output text

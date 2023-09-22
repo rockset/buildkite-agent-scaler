@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eu
 
-make handler.zip
+make bootstrap.zip
 
 if [[ -z "${BUILDKITE_TAG:-}" ]]; then
   VERSION=$(git describe --tags)

@@ -39,7 +39,7 @@ An AWS Lambda bundle is created and published as part of the build process. The 
 - `autoscaling:DescribeScalingActivities`
 - `autoscaling:SetDesiredCapacity`
 
-It's entrypoint is `handler`, it requires a `go1.x` environment and requires the following env vars:
+It's entrypoint is `bootstrap`, it requires a `provided.al2` environment and requires the following env vars:
 
 - `BUILDKITE_AGENT_TOKEN` or `BUILDKITE_AGENT_TOKEN_SSM_KEY`
 - `BUILDKITE_QUEUE`
@@ -54,8 +54,8 @@ aws lambda create-function \
   --memory 128 \
   --role arn:aws:iam::account-id:role/execution_role \
   --runtime go1.x \
-  --zip-file fileb://handler.zip \
-  --handler handler
+  --zip-file fileb://bootstrap.zip \
+  --bootstrap bootstrap
 ```
 
 ## Running locally for development
